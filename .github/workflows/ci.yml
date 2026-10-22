@@ -1,4 +1,4 @@
-name: C validation
+name: C validation and warehouse simulation
 on:
   push:
   pull_request:
@@ -7,13 +7,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build with GCC
+      - name: Build and test with GCC
         run: make CC=gcc all test
-      - name: Build with Clang
+      - name: Build and test with Clang
         run: |
           make clean
           make CC=clang all test
-      - name: CLI smoke test
+      - name: CLI smoke tests
         run: |
           ./sudoku-tester validate examples/valid.sdk --mode 11 --format json | grep -q '"valid":true'
           ./sudoku-tester validate examples/valid.sdk --mode 27 --format json | grep -q '"valid":true'
@@ -28,3 +28,9 @@ jobs:
           status=0
           ./sudoku-tester batch examples/ || status=$?
           test "$status" -eq 1
+          ./warehouse-sim compare examples/warehouse_demo.wh --threads 4 --ticks 250 | grep -q MATCH
+          ./warehouse-sim compare examples/warehouse_conflict.wh --threads 2 --ticks 100 | grep -q MATCH
+          ./warehouse-sim benchmark examples/warehouse_demo.wh --threads 4 --ticks 250 --iterations 2 | grep -q parallel
+          status=0
+          ./warehouse-sim run examples/warehouse_demo.wh --threads 4 --ticks 250 --format json || status=$?
+          test "$status" -le 1
