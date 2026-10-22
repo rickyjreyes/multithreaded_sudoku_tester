@@ -1,33 +1,53 @@
-# Multithreaded Sudoku Tester (C / pthreads)
+# Multithreaded Sudoku Tester
 
-A 2017 C coursework exercise exploring concurrent validation of a hard-coded 9×9 Sudoku grid using POSIX threads. Its intended design uses **11 worker threads**: one to check all rows, one for all columns, and nine for the 3×3 subgrids.
+A modern C / POSIX threads constraint validator built alongside the original **2017 coursework exercise**. The historical file [sudoku_rickyreyes_794.c](sudoku_rickyreyes_794.c) is **preserved verbatim**. Do not build/run it as the trusted checker: its documented bounds, subgrid-indexing and result-aggregation bugs remain intentionally available for historical comparison. See [the original-project notes](docs/ORIGINAL_PROJECT.md).
 
-## Source and intended operation
+The modern program checks **completed boards**, not whether an incomplete puzzle has a solution. It supports 4x4, 9x9 and 16x16, gives per-row/column/box diagnostics, and compares sequential validation against POSIX concurrency strategies. It does **not** claim multithreading is faster for one small board.
 
-[`sudoku_rickyreyes_794.c`](sudoku_rickyreyes_794.c) embeds the example grid directly in `main`, starts the validator threads with `pthread_create`, joins them, prints the grid, and reports whether the puzzle was accepted. There is no file-input interface and no solving/backtracking algorithm: it attempts to **validate an already completed grid**.
+## Build and run
 
-## Build
+Requires a POSIX platform with a C11 compiler, pthreads and make:
 
-On a POSIX environment with a C compiler and pthread support:
+~~~sh
+make
+make test
+./sudoku-tester validate examples/valid.sdk
+./sudoku-tester validate examples/invalid.sdk --format json
+./sudoku-tester validate examples/valid.sdk --mode sequential
+./sudoku-tester validate examples/valid.sdk --mode 11
+./sudoku-tester validate examples/valid.sdk --mode 27
+./sudoku-tester validate examples/valid.sdk --mode pool --threads 4
+./sudoku-tester batch examples/
+./sudoku-tester benchmark --iterations 1000
+./sudoku-tester benchmark --iterations 1000 --format csv
+~~~
 
-```sh
-gcc -std=c11 -Wall -Wextra -pthread sudoku_rickyreyes_794.c -o sudoku_tester
-./sudoku_tester
-```
+**Exit codes:** 0 valid/success; 1 invalid or incomplete board (or batch with such boards); 2 invocation, parse, I/O or threading error. Thus the supplied mixed batch fixture intentionally exits 1. CLI help: \`./sudoku-tester --help\`.
 
-This command describes the intended compilation; running the current source is **not recommended until the defects below are fixed**.
+Input is exactly N×N cells (N selected by \`--size 4|9|16\`, default 9), using \`1..9\`, then \`A..G\` for 10..16. Zero and dot mean blank, which makes validation fail as *incomplete*. Compact lines or separated symbols work. Whitespace, \`| + - , :\` are separators; \`#\` starts a comment. Each file describes one board. Batch mode processes \`.sdk\` files in a directory, nonrecursively. To try larger sizes, use \`--size 4\` or \`--size 16\` with a matching board. The benchmark uses the original 9×9 sample by default or a constructed valid board for the other sizes if no file is given.
 
-## Known correctness and safety problems
+## Architectures
 
-- `initialize_row_column_square` loops with `i <= GRID_SIZE` although `data` has only nine elements, writing `data[9]` out of bounds.
-- The subgrid coordinate mapping indexes squares as though entries ran from 1 through 9, while the spawned threads use `data[0]` through `data[8]`; one intended subgrid is omitted.
-- `isSolved` sets the result to true if **any** square passes alongside row/column results, instead of requiring **all nine** squares to pass.
-- Values are used to index a 10-element `check_*` array without checking they lie from 1 to 9.
-- Heap-allocated thread parameters are not freed; thread-creation failure is not checked.
-- Boolean outcomes are passed through `void *` thread-return values, which is not a robust portable result representation.
+| Mode | Validation work | 9x9 worker count |
+| --- | --- | ---: |
+| sequential | Same checks on calling thread | 0 |
+| 11 / original | All rows, all columns, one task per box | 11 |
+| 27 / fine | One task per row, column and box | 27 |
+| pool | One task per constraint, mutex-protected task queue | Configurable (default 4) |
 
-Accordingly, an apparent “CORRECT” message is not reliable evidence that the grid is valid. The file is useful as a concurrency/validation learning example and a starting point for correcting these defects, not as a trusted Sudoku checker.
+The names 11 and 27 refer to the original **9×9** experiment; on N×N boards the respective worker counts are N+2 and 3N. All modes run the *same checking function*, and the benchmark fails if their complete result vectors disagree. Read-only board memory is shared; results use separate slots, avoiding result data races. Each invocation creates/joins its workers; the "pool" reuses a bounded set of threads **within an invocation**, not across separate validation calls. These details matter when interpreting performance numbers.
 
-## Status
+## Quality gates
 
-Historical single-file exercise. No standalone tests, general-purpose input parser or explicit license are included.
+~~~sh
+make test       # parser, 4/9/16 grids, invalid/incomplete grids, mode agreement
+make sanitize   # AddressSanitizer and UndefinedBehaviorSanitizer (supported hosts)
+make tsan       # ThreadSanitizer (requires compatible platform/runtime)
+make clean
+~~~
+
+GitHub Actions builds with GCC and Clang, runs the unit tests and smoke checks. Sanitizer targets are available for local use; actual measurements and sanitizer availability depend on host hardware/toolchain.
+
+For design and benchmarking methodology, see [ARCHITECTURE](docs/ARCHITECTURE.md) and [BENCHMARKING](benchmarks/README.md).
+
+No license was added: repository licensing remains the owner's decision.

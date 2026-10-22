@@ -1,0 +1,4 @@
+sudoku-tester
+build/
+*.o
+*.csv
