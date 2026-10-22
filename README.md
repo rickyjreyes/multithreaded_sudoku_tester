@@ -22,9 +22,9 @@ make test
 ./sudoku-tester benchmark --iterations 1000 --format csv
 ~~~
 
-**Exit codes:** 0 valid/success; 1 invalid or incomplete board (or batch with such boards); 2 invocation, parse, I/O or threading error. Thus the supplied mixed batch fixture intentionally exits 1. CLI help: \`./sudoku-tester --help\`.
+**Exit codes:** 0 valid/success; 1 invalid or incomplete board (or batch with such boards); 2 invocation, parse, I/O or threading error. Thus the supplied mixed batch fixture intentionally exits 1. CLI help: `./sudoku-tester --help`.
 
-Input is exactly N×N cells (N selected by \`--size 4|9|16\`, default 9), using \`1..9\`, then \`A..G\` for 10..16. Zero and dot mean blank, which makes validation fail as *incomplete*. Compact lines or separated symbols work. Whitespace, \`| + - , :\` are separators; \`#\` starts a comment. Each file describes one board. Batch mode processes \`.sdk\` files in a directory, nonrecursively. To try larger sizes, use \`--size 4\` or \`--size 16\` with a matching board. The benchmark uses the original 9×9 sample by default or a constructed valid board for the other sizes if no file is given.
+Input is exactly N×N cells (N selected by `--size 4|9|16`, default 9), using `1..9`, then `A..G` for 10..16. Zero and dot mean blank, which makes validation fail as *incomplete*. Compact lines or separated symbols work. Whitespace, `| + - , :` are separators; `#` starts a comment. Each file describes one board. Batch mode processes `.sdk` files in a directory, nonrecursively. To try larger sizes, use `--size 4` or `--size 16` with a matching board. The benchmark uses the original 9×9 sample by default or a constructed valid board for the other sizes if no file is given.
 
 ## Architectures
 

@@ -2,7 +2,7 @@
 
 The parser takes exactly N² single-character symbols for N = 4, 9, or 16 and rejects unsupported characters, excess, and missing cells. Each cell is an unsigned byte. A blank is parsed but makes completed-board validation fail.
 
-\`sudoku_unit_valid\` tests all N values of one row, column or box with a bounded bitset. It rejects values outside 1..N *before* shifting. The three result arrays give one slot per constraint and are initialized before execution; aggregation requires every result to pass. The box origin for index i is row = (i / box) * box, col = (i % box) * box, with box = sqrt(N).
+`sudoku_unit_valid` tests all N values of one row, column or box with a bounded bitset. It rejects values outside 1..N *before* shifting. The three result arrays give one slot per constraint and are initialized before execution; aggregation requires every result to pass. The box origin for index i is row = (i / box) * box, col = (i % box) * box, with box = sqrt(N).
 
 **Sequential:** call each task directly.
 **Original:** spawn N+2 pthreads: one covers all rows, another covers all columns and N cover each subgrid.
