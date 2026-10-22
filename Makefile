@@ -10,9 +10,12 @@ TESTBIN = build/test_suite
 LABCORE = lab/lab.c
 LABBIN = concurrency-lab
 LABTEST = build/test_lab
+SWARMCORE = swarm/swarm.c
+SWARMBIN = swarm-lab
+SWARMTEST = build/test_swarm
 
 .PHONY: all test clean sanitize tsan
-all: $(BIN) $(LABBIN)
+all: $(BIN) $(LABBIN) $(SWARMBIN)
 
 $(BIN): $(CORE) src/main.c include/sudoku.h include/validator.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -pthread $(LDFLAGS) -o $@ $(CORE) src/main.c $(LDLIBS)
@@ -28,9 +31,17 @@ $(LABTEST): $(LABCORE) tests/test_lab.c lab/lab.h
 	mkdir -p build
 	$(CC) $(CPPFLAGS) $(CFLAGS) -Ilab -pthread $(LDFLAGS) -o $@ $(LABCORE) tests/test_lab.c $(LDLIBS)
 
-test: $(TESTBIN) $(LABTEST)
+$(SWARMBIN): $(SWARMCORE) swarm/main.c swarm/swarm.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) -Iswarm -pthread $(LDFLAGS) -o $@ $(SWARMCORE) swarm/main.c $(LDLIBS) -lm
+
+$(SWARMTEST): $(SWARMCORE) tests/test_swarm.c swarm/swarm.h
+	mkdir -p build
+	$(CC) $(CPPFLAGS) $(CFLAGS) -Iswarm -pthread $(LDFLAGS) -o $@ $(SWARMCORE) tests/test_swarm.c $(LDLIBS) -lm
+
+test: $(TESTBIN) $(LABTEST) $(SWARMTEST)
 	./$(TESTBIN)
 	./$(LABTEST)
+	./$(SWARMTEST)
 
 sanitize:
 	$(MAKE) clean
@@ -41,4 +52,4 @@ tsan:
 	$(MAKE) CFLAGS="-O1 -g -std=c11 -Wall -Wextra -Wpedantic -Werror -fno-omit-frame-pointer -fsanitize=thread" LDFLAGS="-fsanitize=thread" all test
 
 clean:
-	rm -rf $(BIN) $(LABBIN) build
+	rm -rf $(BIN) $(LABBIN) $(SWARMBIN) build

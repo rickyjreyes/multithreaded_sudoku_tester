@@ -34,3 +34,14 @@ jobs:
           ./concurrency-lab run --mode atomic --jobs 32 --work 4 --threads 2 | grep -q 'mode=atomic'
           ./concurrency-lab compare --jobs 65 --work 5 --threads 4 --profile skewed --seed 42 | grep -q MATCH
           ./concurrency-lab benchmark --jobs 32 --work 4 --threads 2 --trials 2 | grep -q mutex
+      - name: Swarm cross-domain correctness and CLI smoke
+        run: |
+          ./swarm-lab compare --model bees --agents 64 --steps 5 --threads 4 | grep -q MATCH
+          ./swarm-lab compare --model traffic --agents 65 --steps 5 --threads 4 | grep -q MATCH
+          ./swarm-lab compare --model phase --agents 16 --steps 3 --threads 4 | grep -q MATCH
+          ./swarm-lab compare --model life --agents 64 --steps 5 --threads 4 | grep -q MATCH
+          ./swarm-lab run --model phase --agents 16 --steps 2 --scheduler atomic | grep -q phase_order
+          ./swarm-lab benchmark --model traffic --agents 64 --steps 2 --threads 2 --trials 2 | grep -q mutex
+          status=0
+          ./swarm-lab compare --model life --agents 30 --steps 1 || status=$?
+          test "$status" -eq 2
