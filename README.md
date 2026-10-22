@@ -1,6 +1,6 @@
-# Multithreaded Sudoku Tester + Public Concurrency Lab
+# Public Swarm & Concurrency Lab (historical Sudoku preserved)
 
-A public C / POSIX threads experimental sandbox for comparing scheduling strategies using only synthetic arithmetic jobs and a corrected Sudoku validator. **No proprietary operational models, private warehouse code, layouts, routing policies, or device interfaces belong in this repository.** The modern Sudoku validator was built alongside the original **2017 coursework exercise**. The historical file [sudoku_rickyreyes_794.c](sudoku_rickyreyes_794.c) is **preserved verbatim**. Do not build/run it as the trusted checker: its documented bounds, subgrid-indexing and result-aggregation bugs remain intentionally available for historical comparison. See [the original-project notes](docs/ORIGINAL_PROJECT.md).
+A public C / POSIX threads experimental sandbox for **cross-domain swarm behavior**, generic concurrency experiments, and a corrected Sudoku validator. The swarm modules use only stylized, synthetic models; they are not physical/biological prediction engines. **No proprietary operational models, private warehouse code, layouts, routing policies, or device interfaces belong in this repository.** The modern Sudoku validator was built alongside the original **2017 coursework exercise**. The historical file [sudoku_rickyreyes_794.c](sudoku_rickyreyes_794.c) is **preserved verbatim**. Do not build/run it as the trusted checker: its documented bounds, subgrid-indexing and result-aggregation bugs remain intentionally available for historical comparison. See [the original-project notes](docs/ORIGINAL_PROJECT.md).
 
 The modern program checks **completed boards**, not whether an incomplete puzzle has a solution. It supports 4x4, 9x9 and 16x16, gives per-row/column/box diagnostics, and compares sequential validation against POSIX concurrency strategies. It does **not** claim multithreading is faster for one small board.
 
@@ -65,3 +65,28 @@ make all test
 ~~~
 
 The benchmark measures median latency and jobs/second over repeated trials. It checks full ordered results against the sequential reference **outside** the timing interval. No real workload, facility coordinates, scheduling rules, physical agents, or private inputs are included. Read [PUBLIC_LAB](docs/PUBLIC_LAB.md) for experiment design and limitations. Historical warehouse-themed PR #2 was closed, never merged, and is still visible in GitHub history; closing a public PR is not deletion.
+
+
+## Cross-domain swarm laboratory (separate CLI)
+
+The new `swarm-lab` compares collective-state evolution under sequential, static, atomic, and mutex scheduling. Each simulation step reads the same **immutable previous snapshot**, updates independent next-state slots, joins workers, and then publishes the new state. The `compare` command verifies bit-identical complete states after *every step* (within a given binary and platform), not merely matching final summary statistics.
+
+| Synthetic model | What it probes | Primary metric |
+| --- | --- | --- |
+| `bees` | Two-choice local recruitment on a periodic ring; a teaching analogue, not a honeybee model | Committed fraction |
+| `traffic` | Rule-184 one-lane ring: exclusion, jams and flow; not road-network planning | Flow per cell |
+| `phase` | Kuramoto-like all-to-all oscillators: coupling and phase order | Phase coherence/order parameter |
+| `life` | Toroidal Conway cellular automaton: local rules and emergent patterns | Live-cell fraction |
+
+~~~sh
+make all test
+./swarm-lab run --model bees --agents 128 --steps 60 --scheduler atomic --threads 4
+./swarm-lab compare --model traffic --agents 128 --steps 100 --threads 8
+./swarm-lab compare --model phase --agents 64 --steps 50 --threads 8 --coupling 1.5
+./swarm-lab compare --model life --agents 256 --steps 50 --threads 8
+./swarm-lab benchmark --model phase --agents 64 --steps 30 --threads 4 --trials 7
+~~~
+
+For `life`, use a perfect-square number of cells (4 to 256); other models accept 4 to 256 agents. Use `./swarm-lab --help` for all parameters. See [SWARM_LAB](docs/SWARM_LAB.md) for explicit toy update rules, tests, metrics, reproducibility conditions, and non-proprietary scope.
+
+The original 2017 Sudoku source remains byte-for-byte unchanged, and the existing `sudoku-tester` and `concurrency-lab` remain available. This repository is **not a private swarm/warehouse implementation**. No real fleet controls, production coordination protocols, company layouts, or proprietary data are included.

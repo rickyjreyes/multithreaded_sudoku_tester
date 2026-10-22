@@ -3,3 +3,4 @@ build/
 *.o
 *.csv
 concurrency-lab
+swarm-lab
