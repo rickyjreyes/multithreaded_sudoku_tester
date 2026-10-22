@@ -146,7 +146,7 @@ static double next_value(const swarm_world *w, size_t i) {
         int b = (s[(i + n - 1) % n] == 2.0) +
                 (s[(i + 1) % n] == 2.0);
         if (!a && !b) return 0.0;
-        double r = unit_random(random_key(w,i,UINT64_C(0x0ca8f38d7b1e))));
+        double r = unit_random(random_key(w,i,UINT64_C(0x0ca8f38d7b1e)));
         if (r >= 0.60) return 0.0;
         if (a > b) return 1.0;
         if (b > a) return 2.0;
