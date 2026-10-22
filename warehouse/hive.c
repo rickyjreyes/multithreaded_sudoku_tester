@@ -33,8 +33,7 @@ static void trim(char *s) {
 static bool header_line(FILE *in, char *line, size_t len) {
     while (fgets(line, (int)len, in)) {
         trim(line);
-        if (*line && (*line != '#' || !strchr(line, '#') || !strchr(line, ' ')))
-            return true;
+        if (*line && *line != '#') return true;
     }
     return false;
 }
