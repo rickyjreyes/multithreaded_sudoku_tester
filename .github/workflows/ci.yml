@@ -28,3 +28,9 @@ jobs:
           status=0
           ./sudoku-tester batch examples/ || status=$?
           test "$status" -eq 1
+
+      - name: Public synthetic concurrency CLI smoke
+        run: |
+          ./concurrency-lab run --mode atomic --jobs 32 --work 4 --threads 2 | grep -q 'mode=atomic'
+          ./concurrency-lab compare --jobs 65 --work 5 --threads 4 --profile skewed --seed 42 | grep -q MATCH
+          ./concurrency-lab benchmark --jobs 32 --work 4 --threads 2 --trials 2 | grep -q mutex

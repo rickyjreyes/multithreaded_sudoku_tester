@@ -1,6 +1,6 @@
-# Multithreaded Sudoku Tester
+# Multithreaded Sudoku Tester + Public Concurrency Lab
 
-A modern C / POSIX threads constraint validator built alongside the original **2017 coursework exercise**. The historical file [sudoku_rickyreyes_794.c](sudoku_rickyreyes_794.c) is **preserved verbatim**. Do not build/run it as the trusted checker: its documented bounds, subgrid-indexing and result-aggregation bugs remain intentionally available for historical comparison. See [the original-project notes](docs/ORIGINAL_PROJECT.md).
+A public C / POSIX threads experimental sandbox for comparing scheduling strategies using only synthetic arithmetic jobs and a corrected Sudoku validator. **No proprietary operational models, private warehouse code, layouts, routing policies, or device interfaces belong in this repository.** The modern Sudoku validator was built alongside the original **2017 coursework exercise**. The historical file [sudoku_rickyreyes_794.c](sudoku_rickyreyes_794.c) is **preserved verbatim**. Do not build/run it as the trusted checker: its documented bounds, subgrid-indexing and result-aggregation bugs remain intentionally available for historical comparison. See [the original-project notes](docs/ORIGINAL_PROJECT.md).
 
 The modern program checks **completed boards**, not whether an incomplete puzzle has a solution. It supports 4x4, 9x9 and 16x16, gives per-row/column/box diagnostics, and compares sequential validation against POSIX concurrency strategies. It does **not** claim multithreading is faster for one small board.
 
@@ -51,3 +51,17 @@ GitHub Actions builds with GCC and Clang, runs the unit tests and smoke checks. 
 For design and benchmarking methodology, see [ARCHITECTURE](docs/ARCHITECTURE.md) and [BENCHMARKING](benchmarks/README.md).
 
 No license was added: repository licensing remains the owner's decision.
+
+
+## Generic concurrency lab (separate CLI)
+
+The original file and Sudoku CLI remain available. The new program `concurrency-lab` adds **synthetic, non-operational** experiments in sequential processing, static partitioning, atomic work claiming and mutex-protected scheduling. Each job produces a deterministic indexed result, enabling byte-for-byte comparison regardless of thread execution order.
+
+~~~sh
+make all test
+./concurrency-lab run --mode atomic --jobs 512 --work 500 --threads 4
+./concurrency-lab compare --jobs 257 --work 200 --threads 8 --profile skewed --seed 42
+./concurrency-lab benchmark --jobs 8192 --work 1000 --threads 8 --trials 7
+~~~
+
+The benchmark measures median latency and jobs/second over repeated trials. It checks full ordered results against the sequential reference **outside** the timing interval. No real workload, facility coordinates, scheduling rules, physical agents, or private inputs are included. Read [PUBLIC_LAB](docs/PUBLIC_LAB.md) for experiment design and limitations. Historical warehouse-themed PR #2 was closed, never merged, and is still visible in GitHub history; closing a public PR is not deletion.
