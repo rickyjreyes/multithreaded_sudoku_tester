@@ -90,10 +90,10 @@ static int compare(const wh_world *seed, const options *o) {
 static int benchmark(const wh_world *seed,const options *o) {
     if (!o->threads) { fputs("benchmark requires --threads 1..8\n",stderr); return 2; }
     puts("mode,iterations,elapsed_ms,mean_ms_per_trial,completed_orders_per_second");
+    wh_world previous = *seed;
+    int prior_result=-2;
     for (int mode=0;mode<2;++mode) {
         struct timespec a,b;
-        wh_world previous = *seed;
-        int prior_result=-2;
         if (clock_gettime(CLOCK_MONOTONIC,&a)) return 2;
         for (unsigned i=0;i<o->iterations;++i) {
             wh_world run = *seed;
